@@ -7,6 +7,8 @@ if "secret_number" not in st.session_state:
     st.session_state.history = []
     st.session_state.game_started = False
     st.session_state.input_key = 0
+    st.session_state.hint = None
+    st.session_state.hint_type = None
 
 def go_home():
     st.session_state.secret_number = None
@@ -14,6 +16,8 @@ def go_home():
     st.session_state.history = []
     st.session_state.game_started = False
     st.session_state.input_key += 1
+    st.session_state.hint = None
+    st.session_state.hint_type = None
 
 st.markdown("""
 <h1 style='text-align:center;'>🎯 Number Guessing Game</h1>
@@ -34,6 +38,8 @@ if not st.session_state.game_started:
         st.session_state.history = []
         st.session_state.game_started = True
         st.session_state.input_key += 1
+        st.session_state.hint = None
+        st.session_state.hint_type = None
         st.balloons()
 
 if st.session_state.game_started:
@@ -45,6 +51,17 @@ if st.session_state.game_started:
         st.rerun()
 
     st.write(f"💖 Guesses left: **{st.session_state.guesses_left}**")
+
+    # Show hint from previous guess
+    if st.session_state.hint:
+        if st.session_state.hint_type == "error":
+            st.error(st.session_state.hint)
+        elif st.session_state.hint_type == "warning":
+            st.warning(st.session_state.hint)
+        elif st.session_state.hint_type == "info":
+            st.info(st.session_state.hint)
+        else:
+            st.write(st.session_state.hint)
 
     guess = st.number_input(
         "Enter your guess",
@@ -64,6 +81,7 @@ if st.session_state.game_started:
         st.session_state.history.append(guess)
         distance = abs(guess - st.session_state.secret_number)
 
+        # WIN
         if distance == 0:
             st.success("🎉 PERFECT GUESS! YOU WON!")
             st.balloons()
@@ -72,17 +90,24 @@ if st.session_state.game_started:
 
         st.session_state.guesses_left -= 1
 
+        # Save hint to session state so it survives rerun
         if distance <= 5:
-            st.error("🔥 BOILING HOT!")
+            st.session_state.hint = "🔥 BOILING HOT!"
+            st.session_state.hint_type = "error"
         elif distance <= 15:
-            st.warning("🌡️ Hot")
+            st.session_state.hint = "🌡️ Hot"
+            st.session_state.hint_type = "warning"
         elif distance <= 30:
-            st.info("🙂 Warm")
+            st.session_state.hint = "🙂 Warm"
+            st.session_state.hint_type = "info"
         elif distance <= 60:
-            st.write("❄️ Cold")
+            st.session_state.hint = "❄️ Cold"
+            st.session_state.hint_type = "write"
         else:
-            st.write("🥶 Freezing")
+            st.session_state.hint = "🥶 Freezing"
+            st.session_state.hint_type = "write"
 
+        # LOSE
         if st.session_state.guesses_left <= 0:
             st.error(f"💀 Game Over! The number was {st.session_state.secret_number}")
             go_home()
