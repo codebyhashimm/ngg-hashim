@@ -10,6 +10,7 @@ if "secret_number" not in st.session_state:
     st.session_state.hint = None
     st.session_state.hint_type = None
     st.session_state.won = False
+    st.session_state.enter_pressed = False
 
 def go_home():
     st.session_state.secret_number = None
@@ -20,6 +21,7 @@ def go_home():
     st.session_state.hint = None
     st.session_state.hint_type = None
     st.session_state.won = False
+    st.session_state.enter_pressed = False
 
 st.markdown("""
 <h1 style='text-align:center;'>🎯 Number Guessing Game</h1>
@@ -43,6 +45,7 @@ if not st.session_state.game_started:
         st.session_state.hint = None
         st.session_state.hint_type = None
         st.session_state.won = False
+        st.session_state.enter_pressed = False
         st.balloons()
 
 if st.session_state.game_started:
@@ -220,13 +223,31 @@ if st.session_state.game_started:
             key=f"guess_input_{st.session_state.input_key}"
         )
 
+        # Autofocus + Enter key to submit
         st.components.v1.html(
             """
             <script>
-                const inputs = window.parent.document.querySelectorAll('input[type=number]');
+                const doc = window.parent.document;
+
+                // Autofocus the input
+                const inputs = doc.querySelectorAll('input[type=number]');
                 if (inputs.length > 0) {
                     inputs[0].focus();
                 }
+
+                // Press Enter to click Submit button
+                inputs[0].addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const buttons = doc.querySelectorAll('button[kind="secondary"]');
+                        for (let btn of buttons) {
+                            if (btn.innerText.includes('Submit Guess')) {
+                                btn.click();
+                                break;
+                            }
+                        }
+                    }
+                });
             </script>
             """,
             height=0
