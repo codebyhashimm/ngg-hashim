@@ -31,4 +31,75 @@ if not st.session_state.game_started:
     if st.button("🚀 Start Game"):
         st.session_state.secret_number = random.randint(min_num, max_num)
         st.session_state.guesses_left = guesses
-        st.session_state.history =
+        st.session_state.history = []
+        st.session_state.game_started = True
+        st.session_state.input_key += 1
+        st.balloons()
+
+if st.session_state.game_started:
+    st.subheader("🎮 Game Running")
+
+    if st.button("🏠 Finish Game"):
+        st.warning("Returning to home...")
+        go_home()
+        st.rerun()
+
+    st.write(f"💖 Guesses left: **{st.session_state.guesses_left}**")
+
+    guess = st.number_input(
+        "Enter your guess",
+        min_value=0,
+        max_value=500,
+        value=None,
+        placeholder="Type a number...",
+        step=1,
+        key=f"guess_input_{st.session_state.input_key}"
+    )
+
+    if st.button("🎯 Submit Guess"):
+        if guess is None:
+            st.warning("Please enter a number first!")
+            st.stop()
+
+        st.session_state.history.append(guess)
+        distance = abs(guess - st.session_state.secret_number)
+
+        if distance == 0:
+            st.success("🎉 PERFECT GUESS! YOU WON!")
+            st.balloons()
+            go_home()
+            st.rerun()
+
+        st.session_state.guesses_left -= 1
+
+        if distance <= 5:
+            st.error("🔥 BOILING HOT!")
+        elif distance <= 15:
+            st.warning("🌡️ Hot")
+        elif distance <= 30:
+            st.info("🙂 Warm")
+        elif distance <= 60:
+            st.write("❄️ Cold")
+        else:
+            st.write("🥶 Freezing")
+
+        if st.session_state.guesses_left <= 0:
+            st.error(f"💀 Game Over! The number was {st.session_state.secret_number}")
+            go_home()
+            st.rerun()
+
+        st.session_state.input_key += 1
+        st.rerun()
+
+    if st.session_state.history:
+        st.markdown("### 📊 Guess History")
+        for i, g in enumerate(st.session_state.history, 1):
+            st.markdown(f"**{i}.** `{g}`")
+
+st.markdown("""
+<hr>
+<p style='text-align:center; color:grey;'>
+👨‍💻 Created by <b>Hashim Hassan</b><br>
+Built with logic • creativity • persistence 🚀
+</p>
+""", unsafe_allow_html=True)
