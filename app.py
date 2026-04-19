@@ -10,7 +10,8 @@ if "secret_number" not in st.session_state:
     st.session_state.hint = None
     st.session_state.hint_type = None
     st.session_state.won = False
-    st.session_state.enter_pressed = False
+    st.session_state.lost = False
+    st.session_state.max_guesses = 0
 
 def go_home():
     st.session_state.secret_number = None
@@ -21,7 +22,8 @@ def go_home():
     st.session_state.hint = None
     st.session_state.hint_type = None
     st.session_state.won = False
-    st.session_state.enter_pressed = False
+    st.session_state.lost = False
+    st.session_state.max_guesses = 0
 
 st.markdown("""
 <h1 style='text-align:center;'>🎯 Number Guessing Game</h1>
@@ -39,13 +41,14 @@ if not st.session_state.game_started:
     if st.button("🚀 Start Game"):
         st.session_state.secret_number = random.randint(min_num, max_num)
         st.session_state.guesses_left = guesses
+        st.session_state.max_guesses = guesses
         st.session_state.history = []
         st.session_state.game_started = True
         st.session_state.input_key += 1
         st.session_state.hint = None
         st.session_state.hint_type = None
         st.session_state.won = False
-        st.session_state.enter_pressed = False
+        st.session_state.lost = False
         st.balloons()
 
 if st.session_state.game_started:
@@ -93,12 +96,6 @@ if st.session_state.game_started:
             color: #888;
             margin-bottom: 1.5rem;
         }
-        .win-number {
-            font-size: 64px;
-            font-weight: 900;
-            color: #f7971e;
-            margin: 0.5rem 0;
-        }
         .win-stats {
             display: flex;
             justify-content: center;
@@ -141,7 +138,6 @@ if st.session_state.game_started:
             <div class='win-title'>YOU WON!</div>
             <div class='stars-row'>⭐⭐⭐⭐⭐</div>
             <div class='win-subtitle'>Incredible! You cracked the code!</div>
-            <div class='win-number'>🎯</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -192,6 +188,155 @@ if st.session_state.game_started:
                 go_home()
                 st.rerun()
 
+    # LOSE SCREEN
+    elif st.session_state.lost:
+        st.markdown("""
+        <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        @keyframes shimmer-red {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .lose-container {
+            text-align: center;
+            padding: 2rem 1rem;
+            animation: fadeInDown 0.8s ease forwards;
+        }
+        .lose-skull {
+            font-size: 80px;
+            display: block;
+            margin-bottom: 1rem;
+            animation: shake 0.6s ease 0.3s, flicker 2s infinite 1s;
+        }
+        .lose-title {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #e74c3c, #c0392b, #e74c3c);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer-red 2s linear infinite;
+            margin-bottom: 0.5rem;
+        }
+        .lose-subtitle {
+            font-size: 22px;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+        .lose-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .lose-stat-box {
+            background: linear-gradient(135deg, #1a0a0a, #2d1010);
+            border: 2px solid #e74c3c;
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            min-width: 140px;
+        }
+        .lose-stat-label {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+        .lose-stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #e74c3c;
+        }
+        .lose-number-reveal {
+            font-size: 18px;
+            color: #ccc;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+        .lose-number-big {
+            font-size: 52px;
+            font-weight: 900;
+            color: #e74c3c;
+        }
+        .skulls-row {
+            font-size: 32px;
+            letter-spacing: 8px;
+            margin-bottom: 1rem;
+        }
+        .lose-message {
+            font-size: 18px;
+            color: #ccc;
+            margin: 1rem 0 2rem;
+            font-style: italic;
+        }
+        </style>
+
+        <div class='lose-container'>
+            <span class='lose-skull'>💀</span>
+            <div class='lose-title'>GAME OVER!</div>
+            <div class='skulls-row'>💀💀💀💀💀</div>
+            <div class='lose-subtitle'>The number defeated you this time...</div>
+            <div class='lose-number-reveal'>The secret number was</div>
+            <div class='lose-number-big'>{secret_num}</div>
+        </div>
+        """.format(secret_num=st.session_state.secret_number), unsafe_allow_html=True)
+
+        guesses_used = len(st.session_state.history)
+        if guesses_used == 1:
+            lose_message = "😬 Rough start — only 1 guess?"
+        elif guesses_used <= 3:
+            lose_message = "😓 So close yet so far..."
+        elif guesses_used <= 6:
+            lose_message = "😤 You tried hard but the number won!"
+        else:
+            lose_message = "🥵 You gave it everything — just not enough!"
+
+        st.markdown(f"""
+        <div style='text-align:center;'>
+            <div class='lose-stats'>
+                <div class='lose-stat-box'>
+                    <div class='lose-stat-label'>Secret Number</div>
+                    <div class='lose-stat-value'>{st.session_state.secret_number}</div>
+                </div>
+                <div class='lose-stat-box'>
+                    <div class='lose-stat-label'>Guesses Used</div>
+                    <div class='lose-stat-value'>{guesses_used}</div>
+                </div>
+                <div class='lose-stat-box'>
+                    <div class='lose-stat-label'>Total Guesses</div>
+                    <div class='lose-stat-value'>{st.session_state.max_guesses}</div>
+                </div>
+            </div>
+            <div class='lose-message'>{lose_message}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.session_state.history:
+            st.markdown("### 📊 Your Guess Journey")
+            for i, g in enumerate(st.session_state.history, 1):
+                st.markdown(f"**{i}.** `{g}`")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🏠 Try Again", use_container_width=True):
+                go_home()
+                st.rerun()
+
     # GAME SCREEN
     else:
         st.subheader("🎮 Game Running")
@@ -223,31 +368,26 @@ if st.session_state.game_started:
             key=f"guess_input_{st.session_state.input_key}"
         )
 
-        # Autofocus + Enter key to submit
         st.components.v1.html(
             """
             <script>
                 const doc = window.parent.document;
-
-                // Autofocus the input
                 const inputs = doc.querySelectorAll('input[type=number]');
                 if (inputs.length > 0) {
                     inputs[0].focus();
-                }
-
-                // Press Enter to click Submit button
-                inputs[0].addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const buttons = doc.querySelectorAll('button[kind="secondary"]');
-                        for (let btn of buttons) {
-                            if (btn.innerText.includes('Submit Guess')) {
-                                btn.click();
-                                break;
+                    inputs[0].addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const buttons = doc.querySelectorAll('button');
+                            for (let btn of buttons) {
+                                if (btn.innerText.includes('Submit Guess')) {
+                                    btn.click();
+                                    break;
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             </script>
             """,
             height=0
@@ -285,8 +425,7 @@ if st.session_state.game_started:
                 st.session_state.hint_type = "write"
 
             if st.session_state.guesses_left <= 0:
-                st.error(f"💀 Game Over! The number was {st.session_state.secret_number}")
-                go_home()
+                st.session_state.lost = True
                 st.rerun()
 
             st.session_state.input_key += 1
