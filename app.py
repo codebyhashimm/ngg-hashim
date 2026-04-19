@@ -9,24 +9,26 @@ if "secret_number" not in st.session_state:
     st.session_state.guesses_left = 0
     st.session_state.history = []
     st.session_state.game_started = False
+    st.session_state.guess_input = ""   # 👈 FIX: controlled input
 
 # -----------------------------
-# RESET FUNCTION (HOME PAGE)
+# RESET FUNCTION (HOME)
 # -----------------------------
 def go_home():
     st.session_state.secret_number = None
     st.session_state.guesses_left = 0
     st.session_state.history = []
     st.session_state.game_started = False
+    st.session_state.guess_input = ""
 
 # -----------------------------
-# HEADER (WOW FACTOR)
+# HEADER
 # -----------------------------
 st.markdown("""
 <h1 style='text-align:center;'>🎯 Number Guessing Game</h1>
 <h3 style='text-align:center; color:grey;'>Built by Hashim Hassan 🚀</h3>
 <p style='text-align:center;'>
-Can you beat the system, or will the number win again?
+Try your luck — beat the hidden number!
 </p>
 <hr>
 """, unsafe_allow_html=True)
@@ -36,9 +38,8 @@ Can you beat the system, or will the number win again?
 # -----------------------------
 if not st.session_state.game_started:
 
-    st.info("👋 Configure your game settings below and start playing!")
+    st.info("👋 Set your game settings and start!")
 
-    # 🎚️ SLIDERS (UPGRADE)
     min_num = st.slider("Minimum number", 1, 100, 1)
     max_num = st.slider("Maximum number", min_num + 1, 500, 100)
     guesses = st.slider("Number of guesses", 1, 20, 5)
@@ -48,7 +49,8 @@ if not st.session_state.game_started:
         st.session_state.guesses_left = guesses
         st.session_state.history = []
         st.session_state.game_started = True
-        st.balloons()  # 🎉 wow effect
+        st.session_state.guess_input = ""
+        st.balloons()
 
 # -----------------------------
 # GAME SCREEN
@@ -57,20 +59,24 @@ if st.session_state.game_started:
 
     st.subheader("🎮 Game Running")
 
-    # Finish button → instant home
     if st.button("🏠 Finish Game"):
-        st.warning("Game ended. Returning home...")
+        st.warning("Returning to home...")
         go_home()
         st.rerun()
 
     st.write(f"💖 Guesses left: **{st.session_state.guesses_left}**")
 
-    user_guess = st.number_input("Enter your guess", step=1)
+    # 👇 FIXED INPUT (no more sticky 0)
+    guess = st.number_input(
+        "Enter your guess",
+        step=1,
+        key="guess_input"
+    )
 
     if st.button("🎯 Submit Guess"):
 
-        st.session_state.history.append(user_guess)
-        distance = abs(user_guess - st.session_state.secret_number)
+        st.session_state.history.append(guess)
+        distance = abs(guess - st.session_state.secret_number)
 
         # WIN
         if distance == 0:
@@ -82,7 +88,7 @@ if st.session_state.game_started:
         # reduce guesses
         st.session_state.guesses_left -= 1
 
-        # hint system (wow feedback)
+        # hints
         if distance <= 5:
             st.error("🔥 BOILING HOT!")
         elif distance <= 15:
@@ -96,16 +102,19 @@ if st.session_state.game_started:
 
         # LOSE
         if st.session_state.guesses_left <= 0:
-            st.error(f"💀 Game Over! The number was {st.session_state.secret_number}")
+            st.error(f"💀 Game Over! Number was {st.session_state.secret_number}")
             go_home()
 
+        # 👇 RESET INPUT AFTER EVERY GUESS (KEY FIX)
+        st.session_state.guess_input = 0
+
     # -----------------------------
-    # GUESS HISTORY (CLEAN UI)
+    # HISTORY
     # -----------------------------
     if st.session_state.history:
         st.markdown("### 📊 Guess History")
-        for i, guess in enumerate(st.session_state.history, start=1):
-            st.markdown(f"**{i}.** `{guess}`")
+        for i, g in enumerate(st.session_state.history, 1):
+            st.markdown(f"**{i}.** `{g}`")
 
 # -----------------------------
 # FOOTER
@@ -114,7 +123,6 @@ st.markdown("""
 <hr>
 <p style='text-align:center; color:grey;'>
 👨‍💻 Created by <b>Hashim Hassan</b><br>
-Built with logic • creativity • persistence 🚀<br><br>
-A simple idea turned into an interactive experience.
+Built with logic • creativity • persistence 🚀
 </p>
 """, unsafe_allow_html=True)
