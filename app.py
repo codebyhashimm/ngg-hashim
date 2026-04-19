@@ -220,6 +220,18 @@ if st.session_state.game_started:
             key=f"guess_input_{st.session_state.input_key}"
         )
 
+        st.components.v1.html(
+            """
+            <script>
+                const inputs = window.parent.document.querySelectorAll('input[type=number]');
+                if (inputs.length > 0) {
+                    inputs[0].focus();
+                }
+            </script>
+            """,
+            height=0
+        )
+
         if st.button("🎯 Submit Guess"):
             if guess is None:
                 st.warning("Please enter a number first!")
