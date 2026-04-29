@@ -27,7 +27,7 @@ def go_home():
 
 st.markdown("""
 <h1 style='text-align:center;'>🎯 Number Guessing Game</h1>
-<h3 style='text-align:center; color:grey;'>Built by Hashim Hassan adel stinks he's aslo is Cerine best friend🚀</h3>
+<h3 style='text-align:center; color:grey;'>Built by Hashim Hassan Adel is a indian scammer 🚀</h3>
 <p style='text-align:center;'>Try your luck — beat the hidden number!</p>
 <hr>
 """, unsafe_allow_html=True)
